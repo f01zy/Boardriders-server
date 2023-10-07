@@ -8,7 +8,7 @@ const uuid = require("uuid")
 const ApiError = require("../exceptions/Api")
 
 class UserService {
-  async register(email, password) {
+  async register(username, email, password) {
     const candidate = await UserSchema.findOne({email})
 
     if(candidate) {
@@ -18,7 +18,7 @@ class UserService {
     const hashPassword = await bcrypt.hash(password, 3)
     const activationLink = uuid.v4()
 
-    const user = await UserSchema.create({email, password: hashPassword, activationLink})
+    const user = await UserSchema.create({username, email, password: hashPassword, activationLink})
 
     await MailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`)
 
@@ -92,6 +92,20 @@ class UserService {
       ...tokens,
       user: dto
     }
+  }
+
+  async editData(user, username, email) {
+    const userData = await UserSchema.findOne({email: user})
+
+    if(!userData) {
+      throw ApiError.UnauthorizedError()
+    }
+
+    userData.username = username
+    userData.email = email
+    userData.save()
+
+    return userData
   }
 }
 
