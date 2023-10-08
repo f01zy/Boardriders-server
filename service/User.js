@@ -105,7 +105,32 @@ class UserService {
     userData.email = email
     userData.save()
 
-    return userData
+    const dto = new UserDto(userData)
+
+    return dto
+  }
+
+  async editPassword(user, password, newPassword) {
+    const userData = await UserSchema.findOne({email: user})
+
+    if(!userData) {
+      throw ApiError.UnauthorizedError()
+    }
+
+    const isPass = await bcrypt.compare(password, userData.password)
+
+    if(!isPass) {
+      throw ApiError.BadRequest("Неверный пароль")
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 3)
+
+    userData.password = hashPassword
+    userData.save()
+
+    const dto = new UserDto(userData)
+
+    return dto
   }
 }
 

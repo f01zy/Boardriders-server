@@ -52,6 +52,16 @@ class UserController {
     }
   }
 
+  async editPassword(req, res, next) {
+    try {
+      const {user, password, newPassword} = req.body
+      const userData = await UserService.editPassword(user, password, newPassword)
+      return res.json(userData)
+    } catch (e) {
+      next(e)
+    }
+  }
+
   async activate(req, res, next) {
     try {
       const activationLink = req.params.link
